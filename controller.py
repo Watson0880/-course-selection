@@ -59,7 +59,7 @@ def getdata(i_year,i_term,i_week,i_dsep,i_majr,i_stype,i_teac,i_cour):
     option = []
     classcode = []
     index = 0
-    
+    cd = ['一','二','三','四','五','六','七']
     for course in courses:
         if index%9==0 and int(index/9)!=0:
             onlygrade.append(course.text)
@@ -75,8 +75,24 @@ def getdata(i_year,i_term,i_week,i_dsep,i_majr,i_stype,i_teac,i_cour):
         if index%9==5 and int(index/9)!=0:
             point.append(course.text)
         if index%9==6 and int(index/9)!=0:
-            day.append(course.text.split('\xa0\xa0')[1:])
-            print(course.text.split('\xa0\xa0')[1:])
+            day_text = course.text.split(',')
+            day_list = []
+            now = ""
+            for dat in day_text:
+                if dat=="":
+                    day_list.append("")
+                elif dat[0] in cd:
+                    if '[' not in dat:
+                        day_list.append(dat[0]+dat[2:])
+                    else :
+                        day_list.append(dat[0]+dat[2:].split('[')[0])
+                    now = dat[0]
+                else:
+                    if '[' not in dat:
+                        day_list.append(now+dat)
+                    else:
+                        day_list.append(now+dat.split('[')[0])
+            day.append(day_list)
         if index%9==7 and int(index/9)!=0:
             option.append(course.text)
         if index%9==8 and int(index/9)!=0:
@@ -132,7 +148,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.day = []
         self.option = []
         self.classcode = []
-        years = ['111','110','109','108','107','106','105','104','103','102']
+        years = self.get_year()
         self.ui.years.addItems(years)
         terms = ['第一學期','第二學期','暑修上期','暑修下期']
         self.ui.term.addItems(terms)
@@ -218,45 +234,51 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         except:
             self.ui.state.setText("請先選課1")
         
+        
         try:    
             for i in range(len(list_day)):
-                up = list_day[i][0]
-                down = list_day[i][1:]
-                if up=='一':
-                    up = '0'
-                if up=='二':
-                    up = '1'
-                if up=='三':
-                    up = '2'
-                if up=='四':
-                    up = '3'
-                if up=='五':
-                    up = '4'
-                if up=='六':
-                    up = '5'
-                if up=='七':
-                    up = '6'
+                if list_day[0]!='':
+                    up = list_day[i][0]
+                    down = list_day[i][1:]
+                    if up=='一':
+                        up = '0'
+                    if up=='二':
+                        up = '1'
+                    if up=='三':
+                        up = '2'
+                    if up=='四':
+                        up = '3'
+                    if up=='五':
+                        up = '4'
+                    if up=='六':
+                        up = '5'
+                    if up=='七':
+                        up = '6'
 
-                #確認是否已加入
-                is_selected = 0
-                up = int(up)
-                if int(down)<5:
-                    down = int(down)
-                elif down=="45":
-                    down = 5
+                    #確認是否已加入
+                    is_selected = 0
+                    up = int(up)
+                    if int(down)<5:
+                        down = int(down)
+                    elif down=="45":
+                        down = 5
+                    else:
+                        down = int(down)+1
+                    #print("{0} {1}".format(up,down))
+                    for j in range(self.istable[up][down]):
+                        current = self.table[up][down].split('\n')[j*2]
+                        if current in self.ui.courselist.currentText():
+                            is_selected = 1
+                    if is_selected==0:
+                        self.table[up][down] += day_name+'\n'+day_teacher + '\n'
+                        self.istable[up][down] += 1
+                    self.ui.state.setText("加入課程")
                 else:
-                    down = int(down)+1
-                for j in range(self.istable[up][down]):
-                    current = self.table[up][down].split('\n')[j*2]
-                    if current in self.ui.courselist.currentText():
-                        is_selected = 1
-                if is_selected==0:
-                    self.table[up][down] += day_name+'\n'+day_teacher + '\n'
-                    self.istable[up][down] += 1    
+                    self.ui.state.setText("此課程無日期")
             self.print_course()
-            self.ui.state.setText("加入課程")
         except:
             self.ui.state.setText("請先選課2")
+        
             
     def delect_course(self):    
         list_day = []
@@ -267,49 +289,52 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                   list_day=self.day[i]
         except:
             self.ui.state.setText("請先選課1")
-        
         try:    
             for i in range(len(list_day)):
-                up = list_day[i][0]
-                down = list_day[i][1:]
-                if up=='一':
-                    up = '0'
-                if up=='二':
-                    up = '1'
-                if up=='三':
-                    up = '2'
-                if up=='四':
-                    up = '3'
-                if up=='五':
-                    up = '4'
-                if up=='六':
-                    up = '5'
-                if up=='七':
-                    up = '6'
+                if list_day[0]!='':
+                    up = list_day[i][0]
+                    down = list_day[i][1:]
+                    if up=='一':
+                        up = '0'
+                    if up=='二':
+                        up = '1'
+                    if up=='三':
+                        up = '2'
+                    if up=='四':
+                        up = '3'
+                    if up=='五':
+                        up = '4'
+                    if up=='六':
+                        up = '5'
+                    if up=='七':
+                        up = '6'
 
-                #確認是否已加入
-                is_selected = 0
-                up = int(up)
-                if int(down)<5:
-                    down = int(down)
-                elif down=="45":
-                    down = 5
-                else:
-                    down = int(down)+1
-                for j in range(self.istable[up][down]):
-                    current = self.table[up][down].split('\n')[j*2]
-                    if current in self.ui.courselist.currentText():
-                        is_selected = 1
-                if is_selected==1:
-                    changelist = ""
+                    #確認是否已加入
+                    is_selected = 0
+                    up = int(up)
+                    if int(down)<5:
+                        down = int(down)
+                    elif down=="45":
+                        down = 5
+                    else:
+                        down = int(down)+1
                     for j in range(self.istable[up][down]):
                         current = self.table[up][down].split('\n')[j*2]
-                        if current not in self.ui.courselist.currentText():
-                            changelist += self.table[up][down].split('\n')[j*2]+"\n"+self.table[up][down].split('\n')[j*2+1]+"\n"
-                    self.table[up][down] = changelist
-                    self.istable[up][down] -= 1    
+                        if current in self.ui.courselist.currentText():
+                            is_selected = 1
+                    if is_selected==1:
+                        changelist = ""
+                        for j in range(self.istable[up][down]):
+                            current = self.table[up][down].split('\n')[j*2]
+                            if current not in self.ui.courselist.currentText():
+                                changelist += self.table[up][down].split('\n')[j*2]+"\n"+self.table[up][down].split('\n')[j*2+1]+"\n"
+                        self.table[up][down] = changelist
+                        self.istable[up][down] -= 1
+                    self.ui.state.setText("刪除課程")
+                else:
+                    self.ui.state.setText("此課程無日期")
             self.print_course()
-            self.ui.state.setText("刪除課程")
+            
         except:
             self.ui.state.setText("請先選課2")
 
@@ -1151,7 +1176,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         option = []
         classcode = []
         index = 0
-        
+        cd = ['一','二','三','四','五','六','七']
         for course in courses:
             if index%9==0 and int(index/9)!=0:
                 onlygrade.append(course.text)
@@ -1167,8 +1192,24 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             if index%9==5 and int(index/9)!=0:
                 point.append(course.text)
             if index%9==6 and int(index/9)!=0:
-                day.append(course.text.split('\xa0\xa0')[1:])
-                #print(course.text.split('\xa0\xa0')[1:])
+                day_text = course.text.split(',')
+                day_list = []
+                now = ""
+                for dat in day_text:
+                    if dat=="":
+                        day_list.append("")
+                    elif dat[0] in cd:
+                        if '[' not in dat:
+                            day_list.append(dat[0]+dat[2:])
+                        else :
+                            day_list.append(dat[0]+dat[2:].split('[')[0])
+                        now = dat[0]
+                    else:
+                        if '[' not in dat:
+                            day_list.append(now+dat)
+                        else:
+                            day_list.append(now+dat.split('[')[0])
+                day.append(day_list)
             if index%9==7 and int(index/9)!=0:
                 option.append(course.text)
             if index%9==8 and int(index/9)!=0:
@@ -1188,8 +1229,16 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         '''
         return onlygrade,choosecode_name,teacher,grade,haveto,point,day,option,classcode
 
-    
-        
+    def get_year(self):
+        url = "https://fsis.thu.edu.tw/wwwstud/frontend/CourseList.php"
+        html = requests.get(url)
+        sp = BeautifulSoup(html.text,'lxml')
+        getyears = sp.find_all('select',class_='j-select')
+        getyears = getyears[0].find_all('option')
+        returnyear = []
+        for getyear in getyears:
+            returnyear.append(getyear.text)
+        return returnyear
 '''
     def get_name(self,value):
         choosecode_name = value
